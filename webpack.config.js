@@ -3,6 +3,25 @@ const path = require('path');
 const merge = require('webpack-merge')
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const glob = require('glob');
+
+
+
+function find(pattern) {
+  glob(pattern, function (err, files) {
+    if(err) {
+      console.log(err);
+    }
+    console.log(pattern);
+    console.log(files);
+  });
+}
+
+var pattern = "src/*.js";
+find(pattern);
+
+
+
 
 require('dotenv').config();
 
@@ -59,7 +78,7 @@ module.exports = {
   resolve: {
     extensions: [".tag", ".jsx", ".js", ".json",".vue","css"],
     alias: {
-      '@': `${__dirname}/src/${TYPE}`,
+      '@': `${__dirname}/src/`,
       'vue$': 'vue/dist/vue.esm.js'
     }
   },

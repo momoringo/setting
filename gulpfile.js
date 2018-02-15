@@ -7,8 +7,10 @@ const data = require('gulp-data');
 const nunjucks     = require('gulp-nunjucks-render');
 const autoprefixer = require('gulp-autoprefixer');
 const plumber = require('gulp-plumber');
+const browserSync = require("browser-sync").create();
 const webpackConfig = require("./webpack.config");
-
+const njkFunc = require('./src/js/njkFunc.js');
+const reload = browserSync.reload;
 
 const autoprefixerSet = [
   'last 2 version',
@@ -19,14 +21,12 @@ const autoprefixerSet = [
 
 const path = {
   src: './src/**/',
-  build: ''
+  build: './build/'
 };
 
 gulp.task('njk', function() {
   gulp.src(['src/**/*.njk','!./src/**/_*.njk'])
-      .pipe(data(() => {
-          return { test: 'testes' };
-      }))
+      .pipe(data(njkFunc.njkFunc))
       .pipe(nunjucks({
           path: ['src/tmpl/']
       }))
@@ -57,11 +57,21 @@ gulp.task('sass', () => {
     .pipe(gulp.dest('build/css'));
 });
 
+gulp.task('BrowserSyncOn', () => {
+    browserSync.init({
+        server: {
+            baseDir: path.build
+        }
+    });
+    gulp.watch(["./build/js/*.js","./src/**/*"]).on("change", reload);
+});
+
 
 gulp.task('watch', () => {
   gulp.watch([`${path.src}*.js`,`${path.src}*.jsx`,`${path.src}*.vue`,`${path.src}*.tag`], ['script']);
   gulp.watch([`${path.src}*.scss`], ['sass']);
   gulp.watch([`${path.src}*.njk`], ['njk']);
+
 });
 
-gulp.task('default', ['watch']);
+gulp.task('default', ['BrowserSyncOn','watch']);
