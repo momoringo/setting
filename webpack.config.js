@@ -5,41 +5,27 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const glob = require('glob');
 
-
-
-function find(pattern) {
-  glob(pattern, function (err, files) {
-    if(err) {
-      console.log(err);
-    }
-    console.log(pattern);
-    console.log(files);
-  });
-}
-
-var pattern = "src/*.js";
-find(pattern);
-
-
-
-
 require('dotenv').config();
 
-const TYPE = process.env.JS_TYPE
+const jsBasePath = path.resolve(__dirname, 'src/');
+const targets = glob.sync(`${jsBasePath}/*.js`);
+const entries = {};
 
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
-}
+targets.forEach(value => {
+  const re = new RegExp(`${jsBasePath}/`);
+  const key = value.replace(re, '');
+  entries[key] = value;
+});
+
+const ENV = process.env.JS_TYPE
 
 module.exports = {
 
-  entry: {
-    main: `${__dirname}/src/main.js`
-  },
+  entry:entries,
 
   output: {
-    path: `${__dirname}/public/build`,
-    filename: "[name].js"
+    path: path.resolve(__dirname, 'build/js/'),
+    filename: "[name]"
   },
 
   module: {
@@ -78,7 +64,7 @@ module.exports = {
   resolve: {
     extensions: [".tag", ".jsx", ".js", ".json",".vue","css"],
     alias: {
-      '@': `${__dirname}/src/`,
+      '#root#': `${__dirname}/src/`,
       'vue$': 'vue/dist/vue.esm.js'
     }
   },
@@ -89,10 +75,10 @@ module.exports = {
     publicPath: '/build/',
     hot: true,
   },
-  plugins: [
+  plugins: (ENV === 'production' ? [
       new webpack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
       })
-  ],
+  ]: []),
   devtool: 'source-map'
 };
